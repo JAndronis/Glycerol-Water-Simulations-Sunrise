@@ -1,0 +1,11 @@
+# vscode
+*vscode
+
+# custom mdp files
+mdp_*K*
+
+# mdf files
+mdf/*
+
+# backup files
+*\#

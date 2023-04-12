@@ -9,9 +9,9 @@ dt                      = 0.002     ; 2 fs
 nstxout                 = 0         ; suppress bulky .trr file by specifying 
 nstvout                 = 0         ; 0 for output frequency of nstxout,
 nstfout                 = 0         ; nstvout, and nstfout
-nstenergy               = 5000      ; save energies every 10 ps
-nstlog                  = 5000      ; update log file every 10 ps
-nstxout-compressed      = 50000    ; save compressed coordinates every 100 ps
+nstenergy               = 500      ; save energies every 10 ps
+nstlog                  = 500      ; update log file every 10 ps
+nstxout-compressed      = 500    ; save compressed coordinates every 100 ps
 compressed-x-grps       = System    ; save the whole system
 
 ; Bond parameters
@@ -38,7 +38,7 @@ fourierspacing          = 0.16      ; grid spacing for FFT
 tcoupl                  = V-rescale             ; modified Berendsen thermostat
 tc-grps                 = System                ; no coupling groups
 tau_t                   = 0.1                   ; time constant, in ps
-ref_t                   = 300                   ; reference temperature, one for each group, 
+ref_t = 300
 
 ; Pressure coupling is on
 pcoupl                  = Parrinello-Rahman     ; Pressure coupling on in NPT
