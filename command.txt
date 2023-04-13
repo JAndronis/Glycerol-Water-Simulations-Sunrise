@@ -1,1 +1,0 @@
-./grompp_and_run.sh -o /cfs/data/iaan1799/tip4p_pure_water_100A_box -f mdp -t mdf/water.top -b mdf/water.gro -p cops --temp 270
