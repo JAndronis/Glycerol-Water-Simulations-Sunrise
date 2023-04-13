@@ -74,7 +74,7 @@ All the necessary steps have already been hardcoded in the `grompp_and_run.sh` f
 > The flags for the `grompp_and_run.sh` script are as follows:
 >
 > - `[-o | --output-path]` - output directory where the md simulation data will be stored
-> - `[-f | --mdp-directory]` - directory containing the original mdp files. These files will be copied and adjusted according to the provided temperature and then placed in a new directory
+> - `[-f | --mdp-directory]` - directory containing the original mdp files. These files will be copied and adjusted according to the provided temperature and pressure; and then placed in a new directory
 > - `[-t | --topology]` - topology file
 > - `[-b | --box]` - structure file
 > - `[-p | --partition]` - SLURM queue/partition
