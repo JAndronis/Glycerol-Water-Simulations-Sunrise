@@ -68,7 +68,7 @@ gmx solvate -cp mdf/glycerol_box -cs tip4p -o mdf/glycerol_solv.gro -p mdf/glyce
 All the necessary steps have already been hardcoded in the `grompp_and_run.sh` file. To run the simulation, we simply have to run the following command:
 
 ```shell
-./grompp_and_run.sh -o /cfs/data/your/data/directory -f mdp -t mdf/glycerol.top -b mdf/glycerol_solv.gro -p cops --temp 270
+./grompp_and_run.sh -o /cfs/data/your/data/directory -f mdp -t mdf/glycerol.top -b mdf/glycerol_solv.gro -p cops --temp 270 --pressure 1
 ```
 
 > The flags for the `grompp_and_run.sh` script are as follows:
