@@ -13,7 +13,7 @@ nix-shell -p qchem-unstable.gromacs
 
 Ignore any "implausibly old time stamp" warnings. Now we have access to the `gmx` command.
 
-> If the simulation we are planning to run requires more than 1 node it is better to activate nix shell with the package `qchem-unstable.gromacsMPI` to gain access to the command `gmx_mpi`, that will utilize OpenMP rather than Thread MPI. In addition the `gmx` program that is used in this scenario is compiled with SSE4.1 SIMD instructions, which will not utilize the full potential of most Sunrise CPUs.
+> If the simulation we are planning to run requires more than 1 node it is suggested to activate nix shell with the package `qchem-unstable.gromacsMpi` to gain access to the command `gmx_mpi`, that will utilize OpenMP rather than Thread MPI. In addition the `gmx` program that is used in this scenario is compiled with SSE4.1 SIMD instructions, which will not utilize the full potential of most Sunrise CPUs.
 
 The next step is to create the glycerol solution:
 
