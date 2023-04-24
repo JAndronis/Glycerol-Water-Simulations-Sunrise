@@ -1,9 +1,9 @@
 #!/bin/bash
 #! nix-shell -i /cfs/home/iaan1799/gromacs_sims/MD-Gromacs-TIP4P2005/nix-scripts/gromacs_threadMPI.nix -p qchem.gromacs 
 
-#SBATCH --job-name=iaan1799_nvt_test
-#SBATCH --ntasks=32
-#SBATCH --time=05:00:00
+#SBATCH --job-name=NVT_equilibration
+#SBATCH --ntasks=128
+#SBATCH --time=2-00:00:00
 
 POSITIONAL_ARGS=()
 

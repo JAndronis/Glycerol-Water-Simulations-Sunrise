@@ -1,8 +1,9 @@
 #!/bin/bash
 #!nix-shell -i /cfs/home/iaan1799/gromacs_sims/MD-Gromacs-TIP4P2005/nix-scripts/gromacs_threadMPI.nix -p qchem.gromacs 
 
-#SBATCH --job-name=iaan1799_em_test
+#SBATCH --job-name=Energy_Minimization
 #SBATCH --ntasks=8
+#SBATCH --cpus-per-task=1
 #SBATCH --time=05:00:00
 
 POSITIONAL_ARGS=()

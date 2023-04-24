@@ -1,10 +1,9 @@
 #!/bin/bash
-#! nix-shell -i /cfs/home/iaan1799/gromacs_sims/MD-Gromacs-TIP4P2005/nix-scripts/gromacs_threadMPI.nix -p qchem.gromacs 
 
-#SBATCH --job-name=iaan1799_md_test
-#SBATCH --ntasks=32
-#SBATCH --time=3-00:00:00
-#SBATCH --mem=64G
+#SBATCH --job-name=Production_Run_Gromacs
+#SBATCH --ntasks=64
+#SBATCH --time=4-00:00:00
+#SBATCH --mem=32G
 
 POSITIONAL_ARGS=()
 
@@ -25,7 +24,7 @@ while [[ $# -gt 0 ]]; do
             shift
             shift
             ;;
-        -c)
+        -g)
             CHECKPOINT=$2
             shift
             shift
@@ -43,27 +42,50 @@ done
 
 set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
-echo "OUTPUT PATH     = ${WORK_DIR}"
-echo "MDP FILE        = ${MDP}"
-echo "BOX             = ${BOX}"
-echo "TOPOLOGY FILE   = ${TOPOL}"
-echo -e "Submitting job...\n"
+# echo "Running production run..."
+# echo "OUTPUT PATH     = ${WORK_DIR}"
+# echo "MDP FILE        = ${MDP}"
+# echo "TOPOLOGY FILE   = ${TOPOL}"
+# echo -e "Submitting job...\n"
 
-if [ -n "$SLURM_CPUS_PER_TASK" ]; then
-    ntomp="$SLURM_CPUS_PER_TASK"
+echo "SLURM_CPUS_PER_TASK = ${SLURM_CPUS_PER_TASK}"
+echo "SLURM_NTASKS        = ${SLURM_NTASKS}"
+
+if [ $SLURM_JOB_NUM_NODES -gt 1 ]; 
+then
+    GMX="gmx_mpi"
+    MPIRUN="mpirun -np $SLURM_NTASKS"
+    ntmpi=""
 else
-    ntomp="1"
+    GMX="gmx"
+    MPIRUN=""
+    ntmpi="-ntmpi $SLURM_NTASKS"
 fi
 
-export OMP_NUM_THREADS=$ntomp
+if [ -n "$SLURM_CPUS_PER_TASK" ]; 
+then
+    threads=$SLURM_CPUS_PER_TASK
+else
+    threads=1
+fi
 
-if [ -n "$CHECKPOINT" ]; then
-    cpi="-cpi $WORK_DIR/$CHECKPOINT"
+# set OpenMP
+ntomp="-ntomp ${threads}"
+
+# set environment variable
+export OMP_NUM_THREADS=$threads
+
+if [ -n "$CHECKPOINT" ];
+then
+    cpi="-cpi $WORK_DIR/md"
+    tpr="-s $WORK_DIR/md.tpr"
 else
     cpi=""
-    srun -n 1 gmx grompp -f $MDP -c $WORK_DIR/npt.gro -t $WORK_DIR/npt.cpt -p $TOPOL -o $WORK_DIR/md.tpr
+    $GMX grompp -f $MDP -c $WORK_DIR/npt.gro -t $WORK_DIR/npt.cpt -p $TOPOL -o $WORK_DIR/md.tpr
+    tpr="-s $WORK_DIR/md.tpr"
 fi
 
 # run md
-gmx mdrun -ntomp $ntomp -deffnm $WORK_DIR/md $cpi
+echo "Run command: $MPIRUN $GMX mdrun $tpr $ntmpi $ntomp -deffnm $WORK_DIR/md $cpi"
+$MPIRUN $GMX mdrun $ntmpi $ntomp -deffnm $WORK_DIR/md $tpr $cpi
 
