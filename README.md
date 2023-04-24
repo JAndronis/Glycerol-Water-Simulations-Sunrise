@@ -25,7 +25,7 @@ touch mdf/glycerol.top
 Paste in the topology file:
 
 ```text
-#include "../charmm36-jul2022.ff/forcefield.itp"
+#include "../charmm36-jul2021.ff/forcefield.itp"
 
 ; additional params for the molecule
 
