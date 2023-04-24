@@ -1,8 +1,9 @@
 ;title = CHARMM glycerol/water energy minimization
 integrator = steep
+nstcgsteep = 10000
 emtol = 1000.0
-emstep = 0.02
-nsteps = 5000
+emstep = 0.001
+nsteps = 50000
 nstxout = 0
 nstvout = 0
 nstenergy = 500
