@@ -1,17 +1,17 @@
 ;
 ;	File 'mdout.mdp' was generated
-;	By user: unknown (702808)
-;	On host: c03n02
-;	At date: Wed Mar 29 15:53:05 2023
+;	By user: unknown (1567)
+;	On host: node31
+;	At date: Tue May  2 15:51:42 2023
 ;
 ;	Created by:
-;	                      :-) GROMACS - gmx grompp, 2023 (-:
+;	                     :-) GROMACS - gmx grompp, 2022.2 (-:
 ;	
-;	Executable:   /nix/store/hiljm9ilcpaaxni3j4v1443kqaxnazg6-gromacs-2023/bin/gmx
-;	Data prefix:  /nix/store/hiljm9ilcpaaxni3j4v1443kqaxnazg6-gromacs-2023
-;	Working dir:  /cfs/home/iaan1799/gromacs_sims/tip4p2005_testing
+;	Executable:   /usr/local/apps/gromacs/2022.2/intel/bin/gmx_mpi
+;	Data prefix:  /usr/local/apps/gromacs/2022.2/intel
+;	Working dir:  /home/ph4783/gromacs_tests/Glycerol-Water-Simulations-Sunrise
 ;	Command line:
-;	  gmx grompp -f mdp_270K_temp/md.mdp -c /cfs/data/iaan1799/tip4p_pure_water_100A_box/water_270K_sim_29-03-2023_11:03/npt.gro -t /cfs/data/iaan1799/tip4p_pure_water_100A_box/water_270K_sim_29-03-2023_11:03/npt.cpt -p mdf/water.top -o /cfs/data/iaan1799/tip4p_pure_water_100A_box/water_270K_sim_29-03-2023_11:03/md_0_1.tpr
+;	  gmx_mpi grompp -f mdp_220K_1bar_temp/npt.mdp -c mdf/water_220K_1bar_26-04-2023_17:49/nvt.gro -r mdf/water_220K_1bar_26-04-2023_17:49/nvt.gro -p mdf/glycerol.top -o mdf/water_220K_1bar_26-04-2023_17:49/npt.tpr
 
 ; VARIOUS PREPROCESSING OPTIONS
 ; Preprocessor information: use cpp syntax.
@@ -25,7 +25,7 @@ integrator               = md
 ; Start time and timestep in ps
 tinit                    = 0
 dt                       = 0.002
-nsteps                   = 5000000
+nsteps                   = 250000000
 ; For exact run continuation or redoing part of a run
 init-step                = 0
 ; Part index is updated automatically on checkpointing (keeps files separate)
@@ -65,11 +65,11 @@ nstxout                  = 0
 nstvout                  = 0
 nstfout                  = 0
 ; Output frequency for energies to log file and energy file
-nstlog                   = 500
+nstlog                   = 50000
 nstcalcenergy            = 100
-nstenergy                = 500
+nstenergy                = 50000
 ; Output frequency and precision for .xtc file
-nstxout-compressed       = 500
+nstxout-compressed       = 500000
 compressed-x-precision   = 1000
 ; This selects the subset of atoms for the compressed
 ; trajectory file. You can select multiple groups. By
@@ -98,7 +98,7 @@ rlist                    = 1
 coulombtype              = PME
 coulomb-modifier         = Potential-shift-Verlet
 rcoulomb-switch          = 0
-rcoulomb                 = 1.0
+rcoulomb                 = 1.1
 ; Relative dielectric constant for the medium and the reaction field
 epsilon-r                = 1
 epsilon-rf               = 0
@@ -107,7 +107,7 @@ vdw-type                 = Cut-off
 vdw-modifier             = Potential-shift-Verlet
 ; cut-off lengths       
 rvdw-switch              = 0
-rvdw                     = 1.0
+rvdw                     = 1.1
 ; Apply long range dispersion corrections for Energy and Pressure
 DispCorr                 = EnerPres
 ; Extension of the potential lookup tables beyond the cut-off
@@ -115,13 +115,13 @@ table-extension          = 1
 ; Separate tables between energy group pairs
 energygrp-table          = 
 ; Spacing for the PME/PPPM FFT grid
-fourierspacing           = 0.16
+fourierspacing           = 0.17
 ; FFT grid size, when a value is 0 fourierspacing will be used
 fourier-nx               = 0
 fourier-ny               = 0
 fourier-nz               = 0
 ; EWALD/PME/PPPM parameters
-pme-order                = 4
+pme_order                = 4
 ewald-rtol               = 1e-05
 ewald-rtol-lj            = 0.001
 lj-pme-comb-rule         = Geometric
@@ -130,8 +130,6 @@ epsilon-surface          = 0
 implicit-solvent         = no
 
 ; OPTIONS FOR WEAK COUPLING ALGORITHMS
-ensemble-temperature-setting = auto
-ensemble-temperature     = -1
 ; Temperature coupling  
 tcoupl                   = V-rescale
 nsttcouple               = -1
@@ -140,18 +138,18 @@ print-nose-hoover-chain-variables = no
 ; Groups to couple separately
 tc-grps                  = System
 ; Time constant (ps) and reference temperature (K)
-tau_t                    = 0.1
-ref_t                    = 270
+tau_t                    = 1.0
+ref_t                    = 220
 ; pressure coupling     
-pcoupl                   = Parrinello-Rahman
+pcoupl                   = C-rescale
 pcoupltype               = isotropic
 nstpcouple               = -1
 ; Time constant (ps), compressibility (1/bar) and reference P (bar)
-tau_p                    = 1.0
+tau_p                    = 3.0
 compressibility          = 4.5e-5
-ref_p                    = 1.0
+ref_p                    = 1
 ; Scaling of reference coordinates, No, All or COM
-refcoord-scaling         = No
+refcoord_scaling         = com
 
 ; OPTIONS FOR QMMM calculations
 QMMM                     = no
@@ -171,7 +169,7 @@ annealing-temp           =
 ; GENERATE VELOCITIES FOR STARTUP RUN
 gen_vel                  = no
 gen-temp                 = 300
-gen-seed                 = -26321985
+gen-seed                 = -156344475
 
 ; OPTIONS FOR BONDS    
 constraints              = h-bonds
