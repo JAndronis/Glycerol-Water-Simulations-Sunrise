@@ -10,6 +10,8 @@ nstxout                 = 5000      ; save coordinates every 10 ps
 nstvout                 = 5000      ; save velocities every 10 ps
 nstenergy               = 5000      ; save energies every 10 ps
 nstlog                  = 5000      ; update log file every 10 ps
+nstxout-compressed      = 50000     ; save compressed coordinates every 1 ns
+compressed-x-grps       = System    ; save the whole system
 
 ; Bond parameters
 continuation            = no        ; first dynamics run
