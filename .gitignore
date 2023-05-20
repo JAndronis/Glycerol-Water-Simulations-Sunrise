@@ -1,14 +1,20 @@
 # vscode
 *vscode
 
+# data
+**.xvg
+
 # custom mdp files
 mdp_*K*
 
 # mdf files
 mdf/*
 
+# jupyter
+**/.ipynb_checkpoints
+
 # benchmark files
 bench*
 
 # backup files
-*\#
+*\#*

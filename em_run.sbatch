@@ -1,5 +1,4 @@
 #!/bin/bash
-#!nix-shell -i /cfs/home/iaan1799/gromacs_sims/MD-Gromacs-TIP4P2005/nix-scripts/gromacs_threadMPI.nix -p qchem.gromacs 
 
 #SBATCH --job-name=Energy_Minimization
 #SBATCH --ntasks=8
@@ -58,5 +57,5 @@ fi
 export OMP_NUM_THREADS=$ntomp
 
 # run em
-srun -n 1 gmx grompp -f $MDP -c $BOX -p $TOPOL -o $WORK_DIR/em.tpr -po $WORK_DIR/mdout.mdp
-gmx mdrun -ntomp $ntomp -deffnm $WORK_DIR/em
+srun -n 1 gmx_mpi grompp -f $MDP -c $BOX -p $TOPOL -o $WORK_DIR/em.tpr -po $WORK_DIR/mdout.mdp
+mpirun -n $SLURM_NTASKS gmx_mpi mdrun -ntomp $ntomp -deffnm $WORK_DIR/em

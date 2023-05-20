@@ -1,7 +1,6 @@
 #!/bin/bash
 
-gmx tune_pme -np 128 \
-    -s /cfs/home/iaan1799/data/tip4p_glycerol_3p2percent_100A/water_280K_1bar_benchmark/md.tpr \
-    -ntpr 1 \
+srun gmx_mpi tune_pme -np 96 \
+    -s mdf/water_280K_1bar_25-04-2023_15\:15/md.tpr \
     -resetstep 2500 \
-    -mdrun "gmx_mpi mdrun -ntomp 1 -deffnm /cfs/home/iaan1799/data/tip4p_glycerol_3p2percent_100A/water_280K_1bar_benchmark/md"
+    -mdrun "gmx_mpi mdrun -ntomp 1 -deffnm mdf/water_280K_1bar_25-04-2023_15\:15/md"

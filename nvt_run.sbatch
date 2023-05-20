@@ -1,8 +1,7 @@
 #!/bin/bash
-#! nix-shell -i /cfs/home/iaan1799/gromacs_sims/MD-Gromacs-TIP4P2005/nix-scripts/gromacs_threadMPI.nix -p qchem.gromacs 
 
 #SBATCH --job-name=NVT_equilibration
-#SBATCH --ntasks=128
+#SBATCH --ntasks=96
 #SBATCH --time=2-00:00:00
 
 POSITIONAL_ARGS=()
@@ -51,6 +50,5 @@ fi
 
 export OMP_NUM_THREADS=$ntomp
 
-# run em
-srun -n 1 gmx grompp -f $MDP -c $WORK_DIR/em.gro -r $WORK_DIR/em.gro -p $TOPOL -o $WORK_DIR/nvt.tpr
-gmx mdrun -ntomp $ntomp -deffnm $WORK_DIR/nvt
+srun -n 1 gmx_mpi grompp -f $MDP -c $WORK_DIR/em.gro -r $WORK_DIR/em.gro -p $TOPOL -o $WORK_DIR/nvt.tpr
+mpirun -n $SLURM_NTASKS gmx_mpi mdrun -ntomp $ntomp -deffnm $WORK_DIR/nvt
