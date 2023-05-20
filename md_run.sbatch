@@ -73,7 +73,7 @@ fi
 if [ -n "$CHECKPOINT" ]; 
 then
     cpi="-cpi $WORK_DIR/md"
-    tpr="-s $WORK_DIR/md.tpr"
+    tpr="-s $WORK_DIR/md_next.tpr"
 else
     cpi=""
     tpr=""

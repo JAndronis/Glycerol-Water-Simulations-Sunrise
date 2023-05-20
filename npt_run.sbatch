@@ -67,7 +67,7 @@ fi
 
 if [ -n "$CHECKPOINT" ]; then
     cpi="-cpi $WORK_DIR/npt"
-    tpr="-s $WORK_DIR/npt.tpr"
+    tpr="-s $WORK_DIR/npt_next.tpr"
 else
     cpi=""
     tpr=""
