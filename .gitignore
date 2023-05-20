@@ -13,5 +13,8 @@ mdf/*
 # jupyter
 **/.ipynb_checkpoints
 
+# benchmark files
+bench*
+
 # backup files
 *\#*

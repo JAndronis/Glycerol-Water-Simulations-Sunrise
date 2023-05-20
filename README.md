@@ -31,16 +31,7 @@ Paste in the topology file:
 
 #include "../molecules/glycerol.itp"
 
-#include "../charmm36-jul2021.ff/tip4p.itp"
-#ifdef POSRES_WATER
-; Position restraint for each water oxygen
-[ position_restraints ]
-;  i funct		 fcx		fcy		   fcz
-   1	1		1000	   1000		  1000
-#endif
-
-; Include topology for ions
-#include "../charmm36-jul2021.ff/ions.itp"
+#include "../charmm36-jul2021.ff/tip4p2005.itp"
 
 [ system ]
 ; Name
