@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=Production_Run_Gromacs
-#SBATCH --ntasks=64
+#SBATCH --ntasks=96
 #SBATCH --time=4-00:00:00
 #SBATCH --mem=32G
 
@@ -57,8 +57,8 @@ then
     MPIRUN="mpirun -np $SLURM_NTASKS"
     ntmpi=""
 else
-    GMX="gmx"
-    MPIRUN=""
+    GMX="gmx_mpi"
+    MPIRUN="srun -n $SLURM_NTASKS"
     ntmpi="-ntmpi $SLURM_NTASKS"
 fi
 
@@ -69,23 +69,24 @@ else
     threads=1
 fi
 
+
+if [ -n "$CHECKPOINT" ]; 
+then
+    cpi="-cpi $WORK_DIR/md"
+    tpr="-s $WORK_DIR/md_next.tpr"
+else
+    cpi=""
+    tpr=""
+    srun -n 1 gmx_mpi grompp -f $MDP -c $WORK_DIR/npt.gro -t $WORK_DIR/npt.cpt -p $TOPOL -o $WORK_DIR/md.tpr
+fi
+
 # set OpenMP
 ntomp="-ntomp ${threads}"
 
 # set environment variable
 export OMP_NUM_THREADS=$threads
 
-if [ -n "$CHECKPOINT" ];
-then
-    cpi="-cpi $WORK_DIR/md"
-    tpr="-s $WORK_DIR/md.tpr"
-else
-    cpi=""
-    $GMX grompp -f $MDP -c $WORK_DIR/npt.gro -t $WORK_DIR/npt.cpt -p $TOPOL -o $WORK_DIR/md.tpr
-    tpr="-s $WORK_DIR/md.tpr"
-fi
-
 # run md
-echo "Run command: $MPIRUN $GMX mdrun $tpr $ntmpi $ntomp -deffnm $WORK_DIR/md $cpi"
-$MPIRUN $GMX mdrun $ntmpi $ntomp -deffnm $WORK_DIR/md $tpr $cpi
+echo "Run command: $MPIRUN $GMX mdrun $ntmpi $ntomp -deffnm $WORK_DIR/md"
+$MPIRUN $GMX mdrun $ntmpi $ntomp $tpr $cpi -deffnm $WORK_DIR/md -npme 24
 

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --job-name=NPT_Equilibration
-#SBATCH --ntasks=128
-#SBATCH --time=4-00:00:00
+#SBATCH --ntasks=96
+#SBATCH --time=7-00:00:00
 #SBATCH --mem=32G
 
 POSITIONAL_ARGS=()
@@ -50,28 +50,37 @@ echo -e "Submitting job...\n"
 
 if [ $SLURM_JOB_NUM_NODES -gt 1 ]; then
     GMX="gmx_mpi"
-    MPIRUN="mpirun"
+    MPIRUN="mpirun -np $SLURM_NTASKS"
     ntmpi=""
 else
-    GMX="gmx"
-    MPIRUN=""
+    GMX="gmx_mpi"
+    MPIRUN="srun -n $SLURM_NTASKS"
     ntmpi="-ntmpi $SLURM_NTASKS"
 fi
 
 if [ -n "$SLURM_CPUS_PER_TASK" ]; then
-    ntomp="$SLURM_CPUS_PER_TASK"
+    threads="$SLURM_CPUS_PER_TASK"
 else
-    ntomp="1"
+    threads=1
 fi
 
-if [ -n $CHECKPOINT ]; then
-    cpi="-cpi ${WORK_DIR}/npt"
+
+if [ -n "$CHECKPOINT" ]; then
+    cpi="-cpi $WORK_DIR/npt"
+    tpr="-s $WORK_DIR/npt_next.tpr"
 else
     cpi=""
-    $GMX grompp -f $MDP -c $WORK_DIR/nvt.gro -r $WORK_DIR/nvt.gro -t $WORK_DIR/nvt.cpt -p $TOPOL -o $WORK_DIR/npt.tpr
+    tpr=""
+    srun -n 1 gmx_mpi grompp -f $MDP -c $WORK_DIR/nvt.gro -r $WORK_DIR/nvt.gro -p $TOPOL -o $WORK_DIR/npt.tpr
 fi
 
-export OMP_NUM_THREADS=$ntomp
+# set OpenMP
+ntomp="-ntomp ${threads}"
+
+# set environment variable
+export OMP_NUM_THREADS=$threads
 
 # run npt
-$MPIRUN $GMX mdrun $ntmpi -ntomp $ntomp -deffnm $WORK_DIR/npt $cpi
+echo "Run command: $MPIRUN $GMX mdrun $ntmpi -ntomp $ntomp $cpi $tpr -deffnm $WORK_DIR/npt"
+$MPIRUN $GMX mdrun $ntmpi $ntomp $cpi $tpr -deffnm $WORK_DIR/npt 
+

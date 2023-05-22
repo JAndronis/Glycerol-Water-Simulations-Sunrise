@@ -7,6 +7,12 @@ mdp_*K*
 # mdf files
 mdf/*
 
+# jupyter
+**/.ipynb_checkpoints
+
+# benchmark files
+bench*
+
 # backup files
 *\#
 
