@@ -9,3 +9,6 @@ mdf/*
 
 # backup files
 *\#
+
+# ipynb
+**/.ipynb_checkpoints
