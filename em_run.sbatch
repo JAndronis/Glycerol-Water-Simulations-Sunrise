@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --job-name=Energy_Minimization
-#SBATCH --ntasks=8
-#SBATCH --cpus-per-task=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=8
 #SBATCH --time=05:00:00
 
 POSITIONAL_ARGS=()
@@ -48,14 +48,6 @@ echo "BOX             = ${BOX}"
 echo "TOPOLOGY FILE   = ${TOPOL}"
 echo -e "Submitting job...\n"
 
-if [ -n "$SLURM_CPUS_PER_TASK" ]; then
-    ntomp="$SLURM_CPUS_PER_TASK"
-else
-    ntomp="1"
-fi
-
-export OMP_NUM_THREADS=$ntomp
-
 # run em
-srun -n 1 gmx_mpi grompp -f $MDP -c $BOX -p $TOPOL -o $WORK_DIR/em.tpr -po $WORK_DIR/mdout.mdp
-mpirun -n $SLURM_NTASKS gmx_mpi mdrun -ntomp $ntomp -deffnm $WORK_DIR/em
+gmx grompp -f $MDP -c $BOX -p $TOPOL -o $WORK_DIR/em.tpr
+gmx mdrun -v -deffnm $WORK_DIR/em

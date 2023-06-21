@@ -1,9 +1,11 @@
 #!/bin/bash
 
 #SBATCH --job-name=NPT_Equilibration
-#SBATCH --ntasks=96
-#SBATCH --time=7-00:00:00
-#SBATCH --mem=32G
+#SBATCH --partition=cops
+#SBATCH --ntasks=64
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=16G
+#SBATCH --time=5-00:00:00
 
 POSITIONAL_ARGS=()
 
@@ -48,39 +50,40 @@ echo "BOX             = ${BOX}"
 echo "TOPOLOGY FILE   = ${TOPOL}"
 echo -e "Submitting job...\n"
 
-if [ $SLURM_JOB_NUM_NODES -gt 1 ]; then
-    GMX="gmx_mpi"
-    MPIRUN="mpirun -np $SLURM_NTASKS"
-    ntmpi=""
-else
-    GMX="gmx_mpi"
-    MPIRUN="srun -n $SLURM_NTASKS"
-    ntmpi="-ntmpi $SLURM_NTASKS"
-fi
-
 if [ -n "$SLURM_CPUS_PER_TASK" ]; then
     threads="$SLURM_CPUS_PER_TASK"
 else
     threads=1
 fi
 
-
 if [ -n "$CHECKPOINT" ]; then
     cpi="-cpi $WORK_DIR/npt"
-    tpr="-s $WORK_DIR/npt_next.tpr"
+    tpr="$WORK_DIR/npt_next.tpr"
 else
     cpi=""
-    tpr=""
-    srun -n 1 gmx_mpi grompp -f $MDP -c $WORK_DIR/nvt.gro -r $WORK_DIR/nvt.gro -p $TOPOL -o $WORK_DIR/npt.tpr
+    tpr="$WORK_DIR/npt.tpr"
+    gmx grompp -f $MDP -c $WORK_DIR/nvt.gro -r $WORK_DIR/nvt.gro -p $TOPOL -o $tpr
 fi
 
 # set OpenMP
-ntomp="-ntomp ${threads}"
+ntomp=$threads
 
 # set environment variable
 export OMP_NUM_THREADS=$threads
 
 # run npt
-echo "Run command: $MPIRUN $GMX mdrun $ntmpi -ntomp $ntomp $cpi $tpr -deffnm $WORK_DIR/npt"
-$MPIRUN $GMX mdrun $ntmpi $ntomp $cpi $tpr -deffnm $WORK_DIR/npt 
+# mpirun -np $SLURM_NTASKS gmx_mpi mdrun -ntomp $ntomp $cpi -s $tpr -deffnm $WORK_DIR/npt -v -pin on -npme 1
 
+if [[ "${SLURM_NNODES}" -gt "1" ]]; then
+    NP="-np $SLURM_NTASKS"
+    export MPIRUN="$HOME/openmpi-4.1.5/build/bin/mpirun --mca opal_warn_on_missing_libcuda 0"
+    gmx tune_pme \
+      $NP -s $WORK_DIR/npt.tpr -npme all -steps 9000 -resetstep 6000 \
+      -mdrun "gmx_mpi mdrun -v -pin on -ntomp $ntomp -deffnm $WORK_DIR/npt" -launch
+else
+    echo $SLURM_NNODES
+    NTMPI="-ntmpi $SLURM_NTASKS"
+    gmx tune_pme \
+      $NTMPI -s $WORK_DIR/npt.tpr -npme all -steps 9000 -resetstep 6000 \
+      -mdrun "gmx mdrun -v -pin on -ntomp $ntomp -deffnm $WORK_DIR/npt" -launch
+fi

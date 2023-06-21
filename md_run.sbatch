@@ -1,9 +1,11 @@
 #!/bin/bash
 
 #SBATCH --job-name=Production_Run_Gromacs
-#SBATCH --ntasks=96
-#SBATCH --time=4-00:00:00
-#SBATCH --mem=32G
+#SBATCH --partition=cops
+#SBATCH --ntasks=64
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=16G
+#SBATCH --time=3-00:00:00
 
 POSITIONAL_ARGS=()
 
@@ -50,43 +52,43 @@ set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
 echo "SLURM_CPUS_PER_TASK = ${SLURM_CPUS_PER_TASK}"
 echo "SLURM_NTASKS        = ${SLURM_NTASKS}"
+echo "SLURM_NNODES        = ${SLURM_NNODES}"
 
-if [ $SLURM_JOB_NUM_NODES -gt 1 ]; 
-then
-    GMX="gmx_mpi"
-    MPIRUN="mpirun -np $SLURM_NTASKS"
-    ntmpi=""
-else
-    GMX="gmx_mpi"
-    MPIRUN="srun -n $SLURM_NTASKS"
-    ntmpi="-ntmpi $SLURM_NTASKS"
-fi
 
-if [ -n "$SLURM_CPUS_PER_TASK" ]; 
-then
-    threads=$SLURM_CPUS_PER_TASK
+if [ -n "$SLURM_CPUS_PER_TASK" ]; then
+    threads="$SLURM_CPUS_PER_TASK"
 else
     threads=1
 fi
 
-
-if [ -n "$CHECKPOINT" ]; 
-then
-    cpi="-cpi $WORK_DIR/md"
-    tpr="-s $WORK_DIR/md_next.tpr"
+if [ -n "$CHECKPOINT" ]; then
+    cpi="-cpi md"
+    tpr="md_next.tpr"
 else
     cpi=""
-    tpr=""
-    srun -n 1 gmx_mpi grompp -f $MDP -c $WORK_DIR/npt.gro -t $WORK_DIR/npt.cpt -p $TOPOL -o $WORK_DIR/md.tpr
+    tpr="md.tpr"
+    gmx grompp -f $MDP -c $WORK_DIR/npt.gro -r $WORK_DIR/npt.gro -p $TOPOL -o $tpr
 fi
 
 # set OpenMP
-ntomp="-ntomp ${threads}"
+ntomp=$threads
 
 # set environment variable
 export OMP_NUM_THREADS=$threads
 
-# run md
-echo "Run command: $MPIRUN $GMX mdrun $ntmpi $ntomp -deffnm $WORK_DIR/md"
-$MPIRUN $GMX mdrun $ntmpi $ntomp $tpr $cpi -deffnm $WORK_DIR/md -npme 24
+# run npt
+
+if [[ "${SLURM_NNODES}" -gt "1" ]]; then
+    NP="-np $SLURM_NTASKS"
+    export MPIRUN="$HOME/openmpi-4.1.5/build/bin/mpirun --mca opal_warn_on_missing_libcuda 0"
+    gmx tune_pme \
+      $NP -s $WORK_DIR/md.tpr -npme all -steps 9000 -resetstep 6000 \
+      -mdrun "gmx_mpi mdrun -v -pin on -ntomp $ntomp -deffnm $WORK_DIR/md" -launch
+else
+    echo $SLURM_NNODES
+    NTMPI="-ntmpi $SLURM_NTASKS"
+    gmx tune_pme \
+      $NTMPI -s $WORK_DIR/md.tpr -npme all -steps 9000 -resetstep 6000 \
+      -mdrun "gmx mdrun -v -pin on -ntomp $ntomp -deffnm $WORK_DIR/md" -launch
+fi
 
