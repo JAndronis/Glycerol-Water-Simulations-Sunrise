@@ -16,5 +16,8 @@ bench*
 # backup files
 *\#
 
+# data
+**.xvg
+
 # ipynb
 **/.ipynb_checkpoints

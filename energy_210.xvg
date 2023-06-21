@@ -1,15 +1,15 @@
-# This file was created Mon May 22 11:28:19 2023
+# This file was created Fri Jun 16 14:01:13 2023
 # Created by:
-#                      :-) GROMACS - gmx energy, 2022.2 (-:
+#                      :-) GROMACS - gmx energy, 2023.1 (-:
 # 
-# Executable:   /usr/local/apps/gromacs/2022.2/intel/bin/gmx_mpi
-# Data prefix:  /usr/local/apps/gromacs/2022.2/intel
-# Working dir:  /home/ph4783/gromacs_tests/Glycerol-Water-Simulations-Sunrise/mdf/water_210K_1bar_05-05-2023_16:10
+# Executable:   /cfs/home/iaan1799/sw/gromacs-thread/2023.1/bin/gmx
+# Data prefix:  /cfs/home/iaan1799/sw/gromacs-thread/2023.1
+# Working dir:  /cfs/home/iaan1799/gromacs_sims/tip4p2005_testing
 # Command line:
-#   gmx_mpi energy -f md.edr -o ../../energy_210.xvg
+#   gmx energy -f /cfs/home/iaan1799/group-data/sol-nix/MD-glyc-water/mdf/md_210K.edr -o energy_210.xvg
 # gmx energy is part of G R O M A C S:
 #
-# Georgetown Riga Oslo Madrid Amsterdam Chisinau Stockholm
+# GRoups of Organic Molecules in ACtion for Science
 #
 @    title "GROMACS Energies"
 @    xaxis  label "Time (ps)"
