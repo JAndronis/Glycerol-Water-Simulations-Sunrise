@@ -63,10 +63,10 @@ fi
 
 if [ -n "$CHECKPOINT" ]; then
     cpi="-cpi md"
-    tpr="md_next.tpr"
+    tpr="$WORK_DIR/md_next.tpr"
 else
     cpi=""
-    tpr="md.tpr"
+    tpr="$WORK_DIR/md.tpr"
     gmx grompp -f $MDP -c $WORK_DIR/npt.gro -r $WORK_DIR/npt.gro -p $TOPOL -o $tpr
 fi
 
@@ -82,13 +82,13 @@ if [[ "${SLURM_NNODES}" -gt "1" ]]; then
     NP="-np $SLURM_NTASKS"
     export MPIRUN="$HOME/openmpi-4.1.5/build/bin/mpirun --mca opal_warn_on_missing_libcuda 0"
     gmx tune_pme \
-      $NP -s $WORK_DIR/md.tpr -npme all -steps 9000 -resetstep 6000 \
-      -mdrun "gmx_mpi mdrun -v -pin on -ntomp $ntomp -deffnm $WORK_DIR/md" -launch
+      $NP -s $tpr -npme all -steps 9000 -resetstep 6000 \
+      -mdrun "gmx_mpi mdrun -pin on -ntomp $ntomp" -deffnm $WORK_DIR/md -launch
 else
     echo $SLURM_NNODES
     NTMPI="-ntmpi $SLURM_NTASKS"
     gmx tune_pme \
-      $NTMPI -s $WORK_DIR/md.tpr -npme all -steps 9000 -resetstep 6000 \
-      -mdrun "gmx mdrun -v -pin on -ntomp $ntomp -deffnm $WORK_DIR/md" -launch
+      $NTMPI -s $tpr -npme all -steps 9000 -resetstep 6000 \
+      -mdrun "gmx mdrun -pin on -ntomp $ntomp" -deffnm $WORK_DIR/md -launch
 fi
 
