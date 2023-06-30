@@ -1,9 +1,9 @@
 #!/bin/bash
 
 #SBATCH --job-name=NPT_Equilibration
-#SBATCH --partition=cops
-#SBATCH --ntasks=64
-#SBATCH --cpus-per-task=2
+#SBATCH --partition=ampere
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=24
 #SBATCH --mem=16G
 #SBATCH --time=5-00:00:00
 
@@ -51,9 +51,9 @@ echo "TOPOLOGY FILE   = ${TOPOL}"
 echo -e "Submitting job...\n"
 
 if [ -n "$SLURM_CPUS_PER_TASK" ]; then
-    threads="$SLURM_CPUS_PER_TASK"
+    ntomp="$SLURM_CPUS_PER_TASK"
 else
-    threads=1
+    ntomp=1
 fi
 
 if [ -n "$CHECKPOINT" ]; then
@@ -65,23 +65,10 @@ else
     gmx grompp -f $MDP -c $WORK_DIR/nvt.gro -r $WORK_DIR/nvt.gro -p $TOPOL -o $tpr
 fi
 
-# set OpenMP
-ntomp=$threads
-
 # set environment variable
-export OMP_NUM_THREADS=$threads
+export OMP_NUM_THREADS=$ntomp
 
-# run npt
-if [[ "${SLURM_NNODES}" -gt "1" ]]; then
-    NP="-np $SLURM_NTASKS"
-    export MPIRUN="$HOME/openmpi-4.1.5/build/bin/mpirun --mca opal_warn_on_missing_libcuda 0"
-    gmx tune_pme \
-      $NP -s $WORK_DIR/npt.tpr -npme all -steps 9000 -resetstep 6000 \
-      -mdrun "gmx_mpi mdrun -pin on -ntomp $ntomp" -deffnm $WORK_DIR/npt -launch
-else
-    echo $SLURM_NNODES
-    NTMPI="-ntmpi $SLURM_NTASKS"
-    gmx tune_pme \
-      $NTMPI -s $WORK_DIR/npt.tpr -npme all -steps 9000 -resetstep 6000 \
-      -mdrun "gmx mdrun -pin on -ntomp $ntomp" -deffnm $WORK_DIR/npt -launch
-fi
+NTMPI="-ntmpi $SLURM_NTASKS"
+$HOME/sw/gromacs-thread/2023.1/bin/gmx mdrun \
+    -s $tpr -pme gpu -pmefft gpu -nb gpu -bonded gpu -pin on -pinstride 1 \
+    -ntmpi $SLURM_NTASKS -ntomp $SLURM_CPUS_PER_TASK -deffnm $WORK_DIR/npt $cpi

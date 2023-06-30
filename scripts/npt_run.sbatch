@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#SBATCH --job-name=Production_Run_Gromacs
+#SBATCH --job-name=NPT_Equilibration
 #SBATCH --partition=cops
 #SBATCH --ntasks=64
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=16G
-#SBATCH --time=3-00:00:00
+#SBATCH --time=5-00:00:00
 
 POSITIONAL_ARGS=()
 
@@ -44,51 +44,41 @@ done
 
 set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
 
-# echo "Running production run..."
-# echo "OUTPUT PATH     = ${WORK_DIR}"
-# echo "MDP FILE        = ${MDP}"
-# echo "TOPOLOGY FILE   = ${TOPOL}"
-# echo -e "Submitting job...\n"
-
-echo "SLURM_CPUS_PER_TASK = ${SLURM_CPUS_PER_TASK}"
-echo "SLURM_NTASKS        = ${SLURM_NTASKS}"
-echo "SLURM_NNODES        = ${SLURM_NNODES}"
-
+echo "OUTPUT PATH     = ${WORK_DIR}"
+echo "MDP FILE        = ${MDP}"
+echo "BOX             = ${BOX}"
+echo "TOPOLOGY FILE   = ${TOPOL}"
+echo -e "Submitting job...\n"
 
 if [ -n "$SLURM_CPUS_PER_TASK" ]; then
-    threads="$SLURM_CPUS_PER_TASK"
+    ntomp="$SLURM_CPUS_PER_TASK"
 else
-    threads=1
+    ntomp=1
 fi
 
 if [ -n "$CHECKPOINT" ]; then
-    cpi="-cpi md"
-    tpr="$WORK_DIR/md_next.tpr"
+    cpi="-cpi $WORK_DIR/npt"
+    tpr="$WORK_DIR/npt_next.tpr"
 else
     cpi=""
-    tpr="$WORK_DIR/md.tpr"
-    gmx grompp -f $MDP -c $WORK_DIR/npt.gro -r $WORK_DIR/npt.gro -p $TOPOL -o $tpr
+    tpr="$WORK_DIR/npt.tpr"
+    gmx grompp -f $MDP -c $WORK_DIR/nvt.gro -r $WORK_DIR/nvt.gro -p $TOPOL -o $tpr
 fi
 
-# set OpenMP
-ntomp=$threads
-
 # set environment variable
-export OMP_NUM_THREADS=$threads
+export OMP_NUM_THREADS=$ntomp
 
 # run npt
-
 if [[ "${SLURM_NNODES}" -gt "1" ]]; then
     NP="-np $SLURM_NTASKS"
     export MPIRUN="$HOME/openmpi-4.1.5/build/bin/mpirun --mca opal_warn_on_missing_libcuda 0"
     gmx tune_pme \
-      $NP -s $tpr -npme all -steps 9000 -resetstep 6000 \
-      -mdrun "gmx_mpi mdrun -pin on -ntomp $ntomp" -deffnm $WORK_DIR/md -launch
+      $NP -s $WORK_DIR/npt.tpr -npme all -steps 9000 -resetstep 6000 \
+      -mdrun "gmx_mpi mdrun -ntomp $ntomp" -deffnm $WORK_DIR/npt -launch
 else
     echo $SLURM_NNODES
     NTMPI="-ntmpi $SLURM_NTASKS"
     gmx tune_pme \
-      $NTMPI -s $tpr -npme all -steps 9000 -resetstep 6000 \
-      -mdrun "gmx mdrun -pin on -ntomp $ntomp" -deffnm $WORK_DIR/md -launch
+      $NTMPI -s $WORK_DIR/npt.tpr -npme all -steps 9000 -resetstep 6000 \
+      -mdrun "gmx mdrun -ntomp $ntomp" -deffnm $WORK_DIR/npt -launch
 fi
-

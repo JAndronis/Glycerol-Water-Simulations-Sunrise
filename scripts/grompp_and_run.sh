@@ -62,11 +62,11 @@ echo -e "Submitting job...\n"
 
 # directory management
 DT=$(date "+%d-%m-%Y_%H:%M")
-OUT_DIR_NAME="${WORK_DIR}/water_${TEMP}K_${PRESSURE}bar_${DT}"
+OUT_DIR_NAME="${WORK_DIR}/glycerol_water_${TEMP}K_${PRESSURE}bar_${DT}"
 mkdir $OUT_DIR_NAME
 
 # log file
-LOG="water_${TEMP}K_${PRESSURE}bar_job.log"
+LOG="glycerol_water_${TEMP}K_${PRESSURE}bar_job.log"
 touch $OUT_DIR_NAME/$LOG
 
 # MDP files
@@ -97,4 +97,3 @@ jid_nvt_run=$(sbatch -p $PARTITION --output=$OUT_DIR_NAME/$LOG --open-mode=appen
 jid_npt_run=$(sbatch -p $PARTITION --output=$OUT_DIR_NAME/$LOG --open-mode=append --parsable --dependency=afterok:$jid_nvt_run npt_run.sbatch -o $OUT_DIR_NAME -f $NPT_MDP -p $TOPOL)
 
 jid_md_run=$(sbatch -p $PARTITION --output=$OUT_DIR_NAME/$LOG --open-mode=append --parsable --dependency=afterok:$jid_npt_run md_run.sbatch -o $OUT_DIR_NAME -f $MD_MDP -p $TOPOL)
-
