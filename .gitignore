@@ -21,6 +21,7 @@ bench*
 
 # data
 **.xvg
+**.png
 
 # ipynb
 **/.ipynb_checkpoints

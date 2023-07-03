@@ -10,7 +10,6 @@ import subprocess
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Gromacs run automation script")
     root = pathlib.Path(__file__).parent.parent
-    mdf = pathlib.Path(root, "mdf")
     mdp = pathlib.Path(root, "mdp")
     box = pathlib.Path(root, "box.gro")
     topol = pathlib.Path(root, "topol.top")
@@ -20,9 +19,6 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-m", "--mdp", type=str, default=mdp, help="Path to mdp directory"
-    )
-    parser.add_argument(
-        "-f", "--mdf", type=str, default=mdf, help="Path to mdf directory"
     )
     parser.add_argument(
         "-b", "--box", type=str, default=box, help="Path to configuration file"
@@ -56,14 +52,7 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    print("OUTPUT: ", args.output_path)
-    print("MDP: ", args.mdp)
-    print("MDF: ", args.mdf)
-    print("BOX: ", args.box)
-    print("TOP: ", args.topology)
-    if args.launch:
-        print("Running Gromacs...")
-
+    
     box = pathlib.Path(args.box).resolve()
     topol = pathlib.Path(args.topology).resolve()
 
@@ -87,6 +76,13 @@ if __name__ == "__main__":
     md_mdp = pathlib.Path(temp_mdp_dir, "md.mdp")
     for f in passed_mdp_dir.iterdir():
         copy(f, temp_mdp_dir)
+
+    print("OUTPUT: ", output_dir)
+    print("MDP: ", temp_mdp_dir)
+    print("BOX: ", box)
+    print("TOP: ", topol)
+    if args.launch:
+        print("Running Gromacs...")
 
     temp_regex = r"^ref_t\s*=.*"
     pressure_regex = r"^ref_p\s*=.*"
@@ -146,25 +142,25 @@ if __name__ == "__main__":
             em_script = pathlib.Path(scripts, "em_run.sbatch").resolve()
             em_run_cmd = f"sbatch -p {args.partition} --output={log} --open-mode=append --parsable {em_script} -o {output_dir} -f {em_mdp} -p {topol} -c {box}"
             em_run = subprocess.run(em_run_cmd.split(), stdout=subprocess.PIPE)
-            nvt_script = pathlib.Path(scripts, "nvt_run.sbatch")
+            nvt_script = pathlib.Path(scripts, "nvt_run.sbatch").resolve()
             nvt_run_cmd = f"sbatch -p {args.partition} --output={log} --open-mode=append --dependency=afterok:{em_run.stdout.decode('utf-8')} --parsable {nvt_script} -o {output_dir} -f {nvt_mdp} -p {topol}"
             nvt_run = subprocess.run(nvt_run_cmd.split(), stdout=subprocess.PIPE)
-            npt_script = pathlib.Path(scripts, "npt_run.sbatch")
+            npt_script = pathlib.Path(scripts, "npt_run.sbatch").resolve()
             npt_run_cmd = f"sbatch -p {args.partition} --output={log} --open-mode=append --dependency=afterok:{nvt_run.stdout.decode('utf-8')} --parsable {npt_script} -o {output_dir} -f {npt_mdp} -p {topol}"
             npt_run = subprocess.run(npt_run_cmd.split(), stdout=subprocess.PIPE)
-            md_script = pathlib.Path(scripts, "md_run.sbatch")
+            md_script = pathlib.Path(scripts, "md_run.sbatch").resolve()
             md_run_cmd = f"sbatch -p {args.partition} --output={log} --open-mode=append --dependency=afterok:{npt_run.stdout.decode('utf-8')} --parsable {md_script} -o {output_dir} -f {md_mdp} -p {topol}"
             md_run = subprocess.run(md_run_cmd.split(), stdout=subprocess.PIPE)
         else:
             em_script = pathlib.Path(scripts, "em_run.sbatch").resolve()
             em_run_cmd = f"sbatch -p ampere --output={log} --open-mode=append --parsable {em_script} -o {output_dir} -f {em_mdp} -p {topol} -c {box}"
             em_run = subprocess.run(em_run_cmd.split(), stdout=subprocess.PIPE)
-            nvt_script = pathlib.Path(scripts, "nvt_run_GPU.sbatch")
+            nvt_script = pathlib.Path(scripts, "nvt_run_GPU.sbatch").resolve()
             nvt_run_cmd = f"sbatch --gres=gpu:1 --output={log} --open-mode=append --dependency=afterok:{em_run.stdout.decode('utf-8')} --parsable {nvt_script} -o {output_dir} -f {nvt_mdp} -p {topol}"
             nvt_run = subprocess.run(nvt_run_cmd.split(), stdout=subprocess.PIPE)
-            npt_script = pathlib.Path(scripts, "npt_run_GPU.sbatch")
+            npt_script = pathlib.Path(scripts, "npt_run_GPU.sbatch").resolve()
             npt_run_cmd = f"sbatch --gres=gpu:1 --output={log} --open-mode=append --dependency=afterok:{nvt_run.stdout.decode('utf-8')} --parsable {npt_script} -o {output_dir} -f {npt_mdp} -p {topol}"
             npt_run = subprocess.run(npt_run_cmd.split(), stdout=subprocess.PIPE)
-            md_script = pathlib.Path(scripts, "md_run_GPU.sbatch")
+            md_script = pathlib.Path(scripts, "md_run_GPU.sbatch").resolve()
             md_run_cmd = f"sbatch --gres=gpu:1 --output={log} --open-mode=append --dependency=afterok:{npt_run.stdout.decode('utf-8')} --parsable {md_script} -o {output_dir} -f {md_mdp} -p {topol}"
             md_run = subprocess.run(md_run_cmd.split(), stdout=subprocess.PIPE)

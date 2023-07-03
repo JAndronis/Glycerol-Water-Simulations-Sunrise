@@ -70,15 +70,9 @@ export OMP_NUM_THREADS=$ntomp
 # run npt
 
 if [[ "${SLURM_NNODES}" -gt "1" ]]; then
-    NP="-np $SLURM_NTASKS"
     export MPIRUN="$HOME/openmpi-4.1.5/build/bin/mpirun --mca opal_warn_on_missing_libcuda 0"
-    gmx tune_pme \
-      $NP -s $tpr -steps 9000 -resetstep 6000 -p $WORK_DIR/perf.out \
-      -mdrun "gmx_mpi mdrun -ntomp $ntomp" -deffnm $WORK_DIR/md -launch
+    $MPIRUN -np $SLURM_NTASKS gmx_mpi mdrun -ntomp $ntomp -deffnm $WORK_DIR/md -s $tpr $cpi
 else
-    echo $SLURM_NNODES
-    NTMPI="-ntmpi $SLURM_NTASKS"
-    gmx tune_pme \
-      $NTMPI -s $tpr -steps 9000 -resetstep 6000 -p $WORK_DIR/perf.out \
-      -mdrun "gmx mdrun -ntomp $ntomp" -deffnm $WORK_DIR/md -launch
+    gmx mdrun -ntmpi $SLURM_NTASKS -ntomp $ntomp -deffnm $WORK_DIR/md -s $tpr $cpi
 fi
+
